@@ -1,17 +1,17 @@
 import express from 'express';
 const authController = require('../controllers/authController')
 const router = express.Router();
+import { isAuthenticated } from '../middlewares/isAuthenticated';
+
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
-
-
-router.post('/logout', authController.logout);
-router.patch('/send-verification-code', authController.sendVerificationCode);
-router.patch('/verify-verification-code', authController.verifyVerificationCode);
-router.patch('/change-password', authController.changePassword);
-router.patch('/send-forgot-password-code', authController.sendForgotPasswordCode);
-router.patch('/verify-forgot-password-code', authController.verifyForgotPasswordCode);
+router.post('/logout', isAuthenticated, authController.logout);
+router.patch('/send-verification-code',  isAuthenticated, authController.sendVerificationCode);
+router.patch('/verify-verification-code',  isAuthenticated, authController.verifyVerificationCode);
+router.patch('/change-password',  isAuthenticated, authController.changePassword);
+router.patch('/send-forgot-password-code',  isAuthenticated, authController.sendForgotPasswordCode);
+router.patch('/verify-forgot-password-code',  isAuthenticated, authController.verifyForgotPasswordCode);
 
 
 module.exports = router

@@ -69,7 +69,7 @@ export const login = async (req: Request, res: Response) => {
         );
 
         // Set the JWT token in an HTTP-only cookie
-        res.cookie('Authorization', 'Bearer' + token, {
+        res.cookie('Authorization', token, {
             httpOnly: true,      // Prevents client-side JavaScript from accessing the cookie
             secure: process.env.NODE_ENV === 'production', // Only set the cookie over HTTPS in production
             sameSite: 'strict',  // Helps protect against CSRF attacks
