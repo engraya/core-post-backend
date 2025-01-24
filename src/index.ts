@@ -2,7 +2,8 @@ import express, { Request, Response } from 'express';
 import dotenv from "dotenv"
 import mongoose from 'mongoose';
 dotenv.config();
-const authRouter = require('./routers/authRouter')
+const authRouter = require('./routers/authRouter');
+const postRouter = require('./routers/postRouter')
 
 
 const cors = require('cors')
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended : true }));
 
 
 app.use('/api/auth', authRouter);
+app.use('/api/post', postRouter);
 app.get('/', (_req : Request, res : Response) => {
     res.json({ message : "Hello from Express"})
 });

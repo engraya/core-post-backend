@@ -107,3 +107,16 @@ export const userLoginSchema = Joi.object({
       }),
     code: Joi.number().required()
   });
+
+
+  export const createPostSchema = Joi.object({
+    title: Joi.string().required().min(3).max(25).required(),
+    description: Joi.string().min(3).max(500).required(),
+    userId: Joi.string().required()
+  });
+
+
+  export const updatePostSchema = Joi.object({
+    title: Joi.string().required().min(3).max(25).required(),
+    description: Joi.string().min(3).max(500).required(),
+  });

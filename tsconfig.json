@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
       "target": "es6",                    // Specifies the ECMAScript target version
+      "typeRoots": ["./node_modules/@types", "./src/types"],
       "module": "commonjs",                // Specifies module code generation (CommonJS for Node.js)
       "lib": ["es6", "dom"],               // Include necessary libraries for the project (e.g., DOM APIs for web)
       "allowJs": true,                     // Allow JavaScript files to be compiled
