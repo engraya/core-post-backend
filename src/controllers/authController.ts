@@ -185,7 +185,7 @@ export const verifyVerificationCode = async (req: Request, res: Response) => {
             existingUser.verificationCode = undefined;
             existingUser.verificationCodeValidation = undefined;
             await existingUser.save()
-            return res.status(200).json({ success: true, message: 'User Acccount successfully verified!' });
+            return res.status(200).json({ success: true, message: 'User Acccount verified successfully!' });
         }
         return res.status(400).json({ success: true, message: 'Unexpected Error occured!' });
 
@@ -196,7 +196,8 @@ export const verifyVerificationCode = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
-    const { userId, verified } = req.body;
+    const userId = req.user?.userId;
+    const verified = req.user?.verified; 
     const { oldPassword, newPassword } = req.body;
 
     try {
@@ -316,7 +317,7 @@ export const verifyForgotPasswordCode = async (req: Request, res: Response) => {
             existingUser.forgotPasswordCode = undefined;
             existingUser.forgotPasswordCodeValidation = undefined;
             await existingUser.save()
-            return res.status(200).json({ success: true, message: 'User Acccount Password successfully updated!' });
+            return res.status(200).json({ success: true, message: 'User Acccount Password updated successfully!' });
         }
         return res.status(400).json({ success: true, message: 'Unexpected Error occured!' });
 

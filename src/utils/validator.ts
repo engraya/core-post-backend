@@ -110,13 +110,13 @@ export const userLoginSchema = Joi.object({
 
 
   export const createPostSchema = Joi.object({
-    title: Joi.string().required().min(3).max(25).required(),
+    title: Joi.string().required().min(3).max(50).required(),
     description: Joi.string().min(3).max(500).required(),
     userId: Joi.string().required()
   });
 
 
   export const updatePostSchema = Joi.object({
-    title: Joi.string().required().min(3).max(25).required(),
+    title: Joi.string().required().min(3).max(50).required(),
     description: Joi.string().min(3).max(500).required(),
   });

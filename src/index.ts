@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended : true }));
 
 
 app.use('/api/auth', authRouter);
-app.use('/api/post', postRouter);
+app.use('/api/posts', postRouter);
 app.get('/', (_req : Request, res : Response) => {
     res.json({ message : "Hello from Express"})
 });

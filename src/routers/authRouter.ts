@@ -10,8 +10,8 @@ router.post('/logout', isAuthenticated, authController.logout);
 router.patch('/send-verification-code',  isAuthenticated, authController.sendVerificationCode);
 router.patch('/verify-verification-code',  isAuthenticated, authController.verifyVerificationCode);
 router.patch('/change-password',  isAuthenticated, authController.changePassword);
-router.patch('/send-forgot-password-code',  isAuthenticated, authController.sendForgotPasswordCode);
-router.patch('/verify-forgot-password-code',  isAuthenticated, authController.verifyForgotPasswordCode);
+router.patch('/forgot-password',  isAuthenticated, authController.sendForgotPasswordCode);
+router.patch('/verify-forgot-password',  isAuthenticated, authController.verifyForgotPasswordCode);
 
 
 module.exports = router

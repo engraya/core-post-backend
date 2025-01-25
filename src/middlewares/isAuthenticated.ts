@@ -16,7 +16,6 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string, email: string, verified: boolean };
         
         // Attach user information to the request object for further use in route handlers
-        // @ts-ignore
         req.user = { 
             userId: decoded.userId, 
             email: decoded.email,

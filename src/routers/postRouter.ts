@@ -4,7 +4,7 @@ const router = express.Router();
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 
 
-router.get('/all-posts', postController.allPosts);
+router.get('/', postController.allPosts);
 router.get('/:_id', postController.getSinglePost);
 router.post('/create', isAuthenticated, postController.createPost);
 router.put('/update/:_id',  isAuthenticated, postController.updatePost);
