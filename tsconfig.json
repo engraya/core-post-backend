@@ -12,7 +12,7 @@
       "forceConsistentCasingInFileNames": true, // Ensures consistent file name casing across the project
       "moduleResolution": "node",          // Resolves modules using Node.js module resolution strategy
       "resolveJsonModule": true,           // Allows importing of JSON files as modules
-      "noEmit": true,                      // Don't emit output (useful if you only want to type-check)
+      "noEmit": false,                      // Don't emit output (useful if you only want to type-check)
       "isolatedModules": true,             // Ensures each file can be safely transpiled independently
       "noUnusedLocals": true,              // Reports errors for unused variables
       "noUnusedParameters": true,          // Reports errors for unused function parameters
