@@ -1,39 +1,18 @@
-import express, { Request, Response } from 'express';
-import dotenv from "dotenv"
 import mongoose from 'mongoose';
-dotenv.config();
-const authRouter = require('./routers/authRouter');
-const postRouter = require('./routers/postRouter')
+import { createApp } from './app';
+import { config } from './config/env';
 
+async function start() {
+  await mongoose.connect(config.mongodbUri);
+  console.log('MongoDB Database connected successfully..!!');
 
-const cors = require('cors')
-const cookieParser = require('cookie-parser');
-const helmet = require('helmet');
-const app = express();
+  const app = createApp();
+  app.listen(config.port, () => {
+    console.log(`App listening on port ${config.port}`);
+  });
+}
 
-app.use(express.json());
-app.use(cors());
-app.use(helmet());
-app.use(cookieParser());
-app.use(express.urlencoded({ extended : true }));
-
-
-app.use('/api/auth', authRouter);
-app.use('/api/posts', postRouter);
-app.get('/', (_req : Request, res : Response) => {
-    res.json({ message : "Hello from Express"})
+start().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });
-
-
-app.listen(process.env.PORT, () => {
-    console.log(`App Listening on Port ${process.env.PORT}`)
-});
-
-if (process.env.MONGODB_URI) {
-    mongoose.connect(process.env.MONGODB_URI)
-      .then(() => console.log('MongoDB Database connected successfully..!!'))
-      .catch(err => console.error('MongoDB connection error:', err));
-  } else {
-    throw new Error('MONGODB_URI environment variable is not defined');
-  }
-  

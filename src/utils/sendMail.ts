@@ -1,12 +1,10 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
+import { config } from '../config/env';
 
-
-const transport = nodemailer.createTransport({
-    service : 'gmail',
-    auth : {
-        user:process.env.NODE_VERIFICATIONCODE_SENDING_EMAIL_ADDRESS,
-        pass:process.env.NODE_VERIFICATIONCODE_SENDING_EMAIL_PASSWORD
-    }
-})
-
-module.exports = transport;
+export const mailTransport = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: config.mailFrom,
+    pass: config.mailPassword,
+  },
+});

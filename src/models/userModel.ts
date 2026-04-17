@@ -1,13 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-interface IUser extends Document {
+export interface IUser extends Document {
   email: string;
   password: string;
   verified: boolean;
   verificationCode: string | undefined;
   forgotPasswordCode: string | undefined;
-  verificationCodeValidation : Number | undefined
-  forgotPasswordCodeValidation: Number | undefined;
+  verificationCodeValidation: number | undefined;
+  forgotPasswordCodeValidation: number | undefined;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,30 +17,30 @@ const userSchema = new Schema<IUser>(
     email: {
       type: String,
       required: true,
-      unique: [true, "Email must be unique"],
-      minlength: [5, "Eamil must have 5 characters"],
-      lowercase: true, 
-      trim: true, 
-      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'], 
+      unique: [true, 'Email must be unique'],
+      minlength: [5, 'Email must have 5 characters'],
+      lowercase: true,
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: [6, "Password must be 6 characters in Length"],
-      trim : true,
-      select : false
+      required: [true, 'Password is required'],
+      minlength: [8, 'Password must be 8 characters in length'],
+      trim: true,
+      select: false,
     },
     verified: {
       type: Boolean,
-      default: false, 
+      default: false,
     },
     verificationCode: {
       type: String,
       select: false,
     },
     verificationCodeValidation: {
-        type: Number,
-        select: false,
+      type: Number,
+      select: false,
     },
     forgotPasswordCode: {
       type: String,
@@ -53,10 +53,9 @@ const userSchema = new Schema<IUser>(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-// Create a User model based on the schema
 const User = mongoose.model<IUser>('User', userSchema);
 
 export default User;

@@ -4,16 +4,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-// Define the schema for the Post model
 const postSchema = new mongoose_1.default.Schema({
     title: {
         type: String,
-        required: [true, "Title is required"],
+        required: [true, 'Title is required'],
         trim: true,
     },
     description: {
         type: String,
-        required: [true, "Description is required"],
+        required: [true, 'Description is required'],
         trim: true,
     },
     userId: {
@@ -24,6 +23,6 @@ const postSchema = new mongoose_1.default.Schema({
 }, {
     timestamps: true,
 });
-// Create and export the Post model
+postSchema.index({ userId: 1, createdAt: -1 });
 const Post = mongoose_1.default.model('Post', postSchema);
 exports.default = Post;

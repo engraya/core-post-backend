@@ -1,0 +1,30 @@
+import express, { Request, Response } from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import compression from 'compression';
+import authRouter from './routers/authRouter';
+import postRouter from './routers/postRouter';
+import { errorHandler } from './middlewares/errorHandler';
+
+export function createApp() {
+  const app = express();
+
+  app.use(compression());
+  app.use(express.json());
+  app.use(cors());
+  app.use(helmet());
+  app.use(cookieParser());
+  app.use(express.urlencoded({ extended: true }));
+
+  app.get('/', (_req: Request, res: Response) => {
+    res.json({ success: true, message: 'Hello from Express' });
+  });
+
+  app.use('/api/v1/auth', authRouter);
+  app.use('/api/v1/posts', postRouter);
+
+  app.use(errorHandler);
+
+  return app;
+}

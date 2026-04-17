@@ -1,17 +1,31 @@
 import express from 'express';
-const authController = require('../controllers/authController')
-const router = express.Router();
+import * as authController from '../controllers/authController';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
+import { authLoginRegisterLimiter, passwordFlowLimiter } from '../middlewares/rateLimiters';
 
+const router = express.Router();
 
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+router.post('/register', authLoginRegisterLimiter, authController.register);
+router.post('/login', authLoginRegisterLimiter, authController.login);
 router.post('/logout', isAuthenticated, authController.logout);
-router.patch('/send-verification-code',  isAuthenticated, authController.sendVerificationCode);
-router.patch('/verify-verification-code',  isAuthenticated, authController.verifyVerificationCode);
-router.patch('/change-password',  isAuthenticated, authController.changePassword);
-router.patch('/forgot-password',  isAuthenticated, authController.sendForgotPasswordCode);
-router.patch('/verify-forgot-password',  isAuthenticated, authController.verifyForgotPasswordCode);
+router.patch(
+  '/send-verification-code',
+  passwordFlowLimiter,
+  isAuthenticated,
+  authController.sendVerificationCode,
+);
+router.patch(
+  '/verify-verification-code',
+  passwordFlowLimiter,
+  isAuthenticated,
+  authController.verifyVerificationCode,
+);
+router.patch('/change-password', isAuthenticated, authController.changePassword);
+router.patch('/forgot-password', passwordFlowLimiter, authController.sendForgotPasswordCode);
+router.patch(
+  '/verify-forgot-password',
+  passwordFlowLimiter,
+  authController.verifyForgotPasswordCode,
+);
 
-
-module.exports = router
+export default router;

@@ -38,18 +38,18 @@ const userSchema = new mongoose_1.Schema({
     email: {
         type: String,
         required: true,
-        unique: [true, "Email must be unique"],
-        minlength: [5, "Eamil must have 5 characters"],
+        unique: [true, 'Email must be unique'],
+        minlength: [5, 'Email must have 5 characters'],
         lowercase: true,
         trim: true,
         match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
     },
     password: {
         type: String,
-        required: [true, "Password is required"],
-        minlength: [6, "Password must be 6 characters in Length"],
+        required: [true, 'Password is required'],
+        minlength: [8, 'Password must be 8 characters in length'],
         trim: true,
-        select: false
+        select: false,
     },
     verified: {
         type: Boolean,
@@ -74,6 +74,5 @@ const userSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-// Create a User model based on the schema
 const User = mongoose_1.default.model('User', userSchema);
 exports.default = User;

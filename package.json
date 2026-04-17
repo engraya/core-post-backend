@@ -5,16 +5,20 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build" : "tsc"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/supertest": "^7.2.0",
     "nodemon": "^3.1.9",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.4"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -35,6 +39,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.3.2",
     "helmet": "^8.0.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",

@@ -1,12 +1,12 @@
 import mongoose, { Document } from 'mongoose';
-interface IUser extends Document {
+export interface IUser extends Document {
     email: string;
     password: string;
     verified: boolean;
     verificationCode: string | undefined;
     forgotPasswordCode: string | undefined;
-    verificationCodeValidation: Number | undefined;
-    forgotPasswordCodeValidation: Number | undefined;
+    verificationCodeValidation: number | undefined;
+    forgotPasswordCodeValidation: number | undefined;
     createdAt: Date;
     updatedAt: Date;
 }
