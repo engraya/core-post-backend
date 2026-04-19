@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import type { IPost } from './postModel';
 
 export interface IUser extends Document {
   email: string;
@@ -10,6 +11,7 @@ export interface IUser extends Document {
   forgotPasswordCodeValidation: number | undefined;
   createdAt: Date;
   updatedAt: Date;
+  posts?: IPost[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -53,8 +55,16 @@ const userSchema = new Schema<IUser>(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
+
+userSchema.virtual('posts', {
+  ref: 'Post',
+  localField: '_id',
+  foreignField: 'userId',
+});
 
 const User = mongoose.model<IUser>('User', userSchema);
 

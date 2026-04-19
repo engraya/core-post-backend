@@ -5,7 +5,7 @@ export const allPosts = asyncHandler(async (req, res) => {
   const result = await postService.listPosts(req.query.page as string | undefined);
   res.status(200).json({
     success: true,
-    message: 'Post Data retrieved successfullly!',
+    message: 'Post Data retrieved successfully!',
     data: result,
   });
 });

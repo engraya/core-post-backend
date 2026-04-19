@@ -13,13 +13,10 @@ import {
   forgotPasswordCodeSchema,
 } from '../utils/validator';
 import { generateSixDigitOtp } from '../utils/otp';
+import { buildOtpEmail } from '../utils/emailTemplates';
 
 function validationMessage(error: { details: { message: string }[] } | undefined): string {
   return error?.details[0]?.message ?? 'Validation failed';
-}
-
-function otpEmailHtml(code: string): string {
-  return `<h1>${code}</h1>`;
 }
 
 export async function registerUser(body: { email?: string; password?: string }) {
@@ -89,11 +86,13 @@ export async function sendVerificationCodeForEmail(authedEmail: string) {
   }
 
   const verificationCodeValue = generateSixDigitOtp();
+  const { html, text } = buildOtpEmail(verificationCodeValue, 'verification');
   const info = await mailTransport.sendMail({
     from: config.mailFrom,
     to: existingUser.email,
-    subject: 'Verification Code',
-    html: otpEmailHtml(verificationCodeValue),
+    subject: 'Your verification code — Core Post',
+    html,
+    text,
   });
 
   if (info.accepted[0] !== existingUser.email) {
@@ -197,11 +196,13 @@ export async function sendForgotPasswordCode(body: { email?: string }) {
   }
 
   const verificationCodeValue = generateSixDigitOtp();
+  const { html, text } = buildOtpEmail(verificationCodeValue, 'password-reset');
   const info = await mailTransport.sendMail({
     from: config.mailFrom,
     to: existingUser.email,
-    subject: 'Forgot Password Code',
-    html: otpEmailHtml(verificationCodeValue),
+    subject: 'Reset your password — Core Post',
+    html,
+    text,
   });
 
   if (info.accepted[0] !== existingUser.email) {

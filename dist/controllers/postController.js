@@ -49,7 +49,7 @@ exports.allPosts = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void
     const result = yield postService.listPosts(req.query.page);
     res.status(200).json({
         success: true,
-        message: 'Post Data retrieved successfullly!',
+        message: 'Post Data retrieved successfully!',
         data: result,
     });
 }));

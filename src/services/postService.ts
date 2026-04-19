@@ -17,10 +17,6 @@ export async function listPosts(page?: string) {
     .sort({ createdAt: -1 })
     .skip(page_number * per_page)
     .limit(per_page)
-    .populate({
-      path: 'userId',
-      select: 'email',
-    });
 }
 
 export async function createPostForUser(
@@ -44,10 +40,7 @@ export async function createPostForUser(
 }
 
 export async function getSinglePost(postId: string) {
-  const post = await Post.findById(postId).populate({
-    path: 'userId',
-    select: 'email',
-  });
+  const post = await Post.findById(postId)
   if (!post) {
     throw new AppError(404, 'Post not found');
   }
