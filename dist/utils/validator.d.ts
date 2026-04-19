@@ -2,6 +2,8 @@ import Joi from 'joi';
 export declare const userRegisterSchema: Joi.ObjectSchema<any>;
 export declare const userLoginSchema: Joi.ObjectSchema<any>;
 export declare const verifyVerificationCodeSchema: Joi.ObjectSchema<any>;
+/** Resend verification code (unauthenticated — same shape as forgot-password email step). */
+export declare const sendVerificationEmailSchema: Joi.ObjectSchema<any>;
 export declare const changePasswordSchema: Joi.ObjectSchema<any>;
 export declare const forgotPasswordSendSchema: Joi.ObjectSchema<any>;
 export declare const forgotPasswordCodeSchema: Joi.ObjectSchema<any>;

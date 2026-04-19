@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel';
+import type { IUser } from '../models/userModel';
 import { config } from '../config/env';
 import { AppError } from '../errors/AppError';
 import { doHash, doHashValidation, hmacProcess } from '../utils/hashing';
@@ -8,15 +9,63 @@ import {
   userRegisterSchema,
   userLoginSchema,
   verifyVerificationCodeSchema,
+  sendVerificationEmailSchema,
   changePasswordSchema,
   forgotPasswordSendSchema,
   forgotPasswordCodeSchema,
 } from '../utils/validator';
 import { generateSixDigitOtp } from '../utils/otp';
-import { buildOtpEmail } from '../utils/emailTemplates';
+import {
+  buildOtpEmail,
+  getOtpEmailSubject,
+  buildAccountVerifiedEmail,
+  getAccountVerifiedEmailSubject,
+} from '../utils/emailTemplates';
 
 function validationMessage(error: { details: { message: string }[] } | undefined): string {
   return error?.details[0]?.message ?? 'Validation failed';
+}
+
+async function sendAndStoreEmailVerificationCode(
+  user: IUser,
+  templateKind: 'welcome' | 'verification',
+): Promise<void> {
+  const verificationCodeValue = generateSixDigitOtp();
+  const { html, text } = buildOtpEmail(verificationCodeValue, templateKind);
+  const info = await mailTransport.sendMail({
+    from: config.mailFrom,
+    to: user.email,
+    subject: getOtpEmailSubject(templateKind),
+    html,
+    text,
+  });
+
+  if (info.accepted[0] !== user.email) {
+    throw new AppError(502, 'Verification code could not be sent.');
+  }
+
+  user.verificationCode = hmacProcess(verificationCodeValue, config.hmacKey);
+  user.verificationCodeValidation = Date.now();
+  await user.save();
+}
+
+/** Sent after successful verification; failures are logged and do not roll back verification. */
+async function sendAccountVerifiedConfirmationEmail(to: string): Promise<void> {
+  const { html, text } = buildAccountVerifiedEmail(to);
+  try {
+    const info = await mailTransport.sendMail({
+      from: config.mailFrom,
+      to,
+      subject: getAccountVerifiedEmailSubject(),
+      html,
+      text,
+    });
+    if (info.accepted[0] !== to) {
+      console.error('Account verified confirmation email was not accepted for', to);
+    }
+  } catch (err) {
+    console.error('Failed to send account verified confirmation email:', err);
+  }
 }
 
 export async function registerUser(body: { email?: string; password?: string }) {
@@ -34,6 +83,7 @@ export async function registerUser(body: { email?: string; password?: string }) 
   const hashedPassword = await doHash(password, 12);
   const newUser = new User({ email, password: hashedPassword });
   const result = await newUser.save();
+  await sendAndStoreEmailVerificationCode(result, 'welcome');
   const obj = result.toObject();
   delete (obj as { password?: string }).password;
   return obj;
@@ -56,6 +106,10 @@ export async function loginUser(body: { email?: string; password?: string }) {
     throw new AppError(401, 'Invalid email or password!');
   }
 
+  if (!existingUser.verified) {
+    throw new AppError(403, 'Please verify your email before signing in.');
+  }
+
   const userIdStr = String(existingUser._id);
   const token = jwt.sign(
     {
@@ -76,8 +130,14 @@ export async function loginUser(body: { email?: string; password?: string }) {
   };
 }
 
-export async function sendVerificationCodeForEmail(authedEmail: string) {
-  const existingUser = await User.findOne({ email: authedEmail });
+export async function sendVerificationCodeForEmail(body: { email?: string }) {
+  const { error, value } = sendVerificationEmailSchema.validate(body);
+  if (error) {
+    throw new AppError(400, validationMessage(error));
+  }
+
+  const { email } = value;
+  const existingUser = await User.findOne({ email });
   if (!existingUser) {
     throw new AppError(404, 'User does not exist!');
   }
@@ -85,39 +145,16 @@ export async function sendVerificationCodeForEmail(authedEmail: string) {
     throw new AppError(400, 'User already verified!');
   }
 
-  const verificationCodeValue = generateSixDigitOtp();
-  const { html, text } = buildOtpEmail(verificationCodeValue, 'verification');
-  const info = await mailTransport.sendMail({
-    from: config.mailFrom,
-    to: existingUser.email,
-    subject: 'Your verification code — Core Post',
-    html,
-    text,
-  });
-
-  if (info.accepted[0] !== existingUser.email) {
-    throw new AppError(502, 'Verification code could not be sent.');
-  }
-
-  const hashedVerificationCodeValue = hmacProcess(verificationCodeValue, config.hmacKey);
-  existingUser.verificationCode = hashedVerificationCodeValue;
-  existingUser.verificationCodeValidation = Date.now();
-  await existingUser.save();
+  await sendAndStoreEmailVerificationCode(existingUser, 'verification');
 }
 
-export async function verifyVerificationCode(
-  tokenEmail: string,
-  body: { email?: string; code?: string },
-) {
+export async function verifyVerificationCode(body: { email?: string; code?: string }) {
   const { error, value } = verifyVerificationCodeSchema.validate(body);
   if (error) {
     throw new AppError(400, validationMessage(error));
   }
 
   const { email, code } = value;
-  if (email.toLowerCase() !== tokenEmail.toLowerCase()) {
-    throw new AppError(400, 'Email does not match the authenticated user.');
-  }
 
   const existingUser = await User.findOne({ email }).select(
     '+verificationCode +verificationCodeValidation',
@@ -148,6 +185,27 @@ export async function verifyVerificationCode(
   existingUser.verificationCode = undefined;
   existingUser.verificationCodeValidation = undefined;
   await existingUser.save();
+
+  await sendAccountVerifiedConfirmationEmail(existingUser.email);
+
+  const userIdStr = String(existingUser._id);
+  const token = jwt.sign(
+    {
+      userId: userIdStr,
+      email: existingUser.email,
+      verified: true,
+    },
+    config.jwtSecret,
+    { expiresIn: '1h' },
+  );
+
+  return {
+    token,
+    user: {
+      id: userIdStr,
+      email: existingUser.email,
+    },
+  };
 }
 
 export async function changePasswordForUser(
@@ -200,7 +258,7 @@ export async function sendForgotPasswordCode(body: { email?: string }) {
   const info = await mailTransport.sendMail({
     from: config.mailFrom,
     to: existingUser.email,
-    subject: 'Reset your password — Core Post',
+    subject: getOtpEmailSubject('password-reset'),
     html,
     text,
   });

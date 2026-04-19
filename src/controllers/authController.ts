@@ -6,7 +6,7 @@ export const register = asyncHandler(async (req, res) => {
   const result = await authService.registerUser(req.body);
   res.status(201).json({
     success: true,
-    message: 'User Account created Successfully....!',
+    message: 'Account created. Check your email for a verification code.',
     data: result,
   });
 });
@@ -33,13 +33,24 @@ export const logout = asyncHandler(async (_req, res) => {
 });
 
 export const sendVerificationCode = asyncHandler(async (req, res) => {
-  await authService.sendVerificationCodeForEmail(req.user!.email);
+  await authService.sendVerificationCodeForEmail(req.body);
   res.status(200).json({ success: true, message: 'Verification Code sent Successfully..!' });
 });
 
 export const verifyVerificationCode = asyncHandler(async (req, res) => {
-  await authService.verifyVerificationCode(req.user!.email, req.body);
-  res.status(200).json({ success: true, message: 'User Acccount verified successfully!' });
+  const { token, user } = await authService.verifyVerificationCode(req.body);
+  res.cookie('Authorization', token, {
+    httpOnly: true,
+    secure: config.nodeEnv === 'production',
+    sameSite: 'strict',
+    maxAge: 3600000,
+    path: '/',
+  });
+  res.status(200).json({
+    success: true,
+    message: 'User account verified successfully!',
+    data: { token, user },
+  });
 });
 
 export const changePassword = asyncHandler(async (req, res) => {
@@ -54,5 +65,5 @@ export const sendForgotPasswordCode = asyncHandler(async (req, res) => {
 
 export const verifyForgotPasswordCode = asyncHandler(async (req, res) => {
   await authService.verifyForgotPasswordCode(req.body);
-  res.status(200).json({ success: true, message: 'User Acccount Password updated successfully!' });
+  res.status(200).json({ success: true, message: 'User account password updated successfully!' });
 });

@@ -21,6 +21,7 @@ const postSchema = new mongoose_1.default.Schema({
         required: true,
     },
 }, {
+    id: false,
     timestamps: true,
 });
 postSchema.index({ userId: 1, createdAt: -1 });

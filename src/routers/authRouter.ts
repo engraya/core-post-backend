@@ -11,13 +11,11 @@ router.post('/logout', isAuthenticated, authController.logout);
 router.patch(
   '/send-verification-code',
   passwordFlowLimiter,
-  isAuthenticated,
   authController.sendVerificationCode,
 );
 router.patch(
-  '/verify-verification-code',
+  '/verify-account',
   passwordFlowLimiter,
-  isAuthenticated,
   authController.verifyVerificationCode,
 );
 router.patch('/change-password', isAuthenticated, authController.changePassword);

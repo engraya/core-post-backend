@@ -60,6 +60,19 @@ export const verifyVerificationCodeSchema = Joi.object({
   code: otpCodeSchema,
 });
 
+/** Resend verification code (unauthenticated — same shape as forgot-password email step). */
+export const sendVerificationEmailSchema = Joi.object({
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .required()
+    .messages({
+      'string.base': 'Email must be a string',
+      'string.empty': 'Email cannot be empty',
+      'string.email': 'Email must be a valid email address',
+      'any.required': 'Email is required',
+    }),
+});
+
 export const changePasswordSchema = Joi.object({
   oldPassword: passwordRules,
   newPassword: passwordRules,

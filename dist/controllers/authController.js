@@ -50,7 +50,7 @@ exports.register = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void
     const result = yield authService.registerUser(req.body);
     res.status(201).json({
         success: true,
-        message: 'User Account created Successfully....!',
+        message: 'Account created. Check your email for a verification code.',
         data: result,
     });
 }));
@@ -74,12 +74,23 @@ exports.logout = (0, asyncHandler_1.asyncHandler)((_req, res) => __awaiter(void 
     res.status(200).json({ success: true, message: 'User Logged out successfully....!' });
 }));
 exports.sendVerificationCode = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield authService.sendVerificationCodeForEmail(req.user.email);
+    yield authService.sendVerificationCodeForEmail(req.body);
     res.status(200).json({ success: true, message: 'Verification Code sent Successfully..!' });
 }));
 exports.verifyVerificationCode = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    yield authService.verifyVerificationCode(req.user.email, req.body);
-    res.status(200).json({ success: true, message: 'User Acccount verified successfully!' });
+    const { token, user } = yield authService.verifyVerificationCode(req.body);
+    res.cookie('Authorization', token, {
+        httpOnly: true,
+        secure: env_1.config.nodeEnv === 'production',
+        sameSite: 'strict',
+        maxAge: 3600000,
+        path: '/',
+    });
+    res.status(200).json({
+        success: true,
+        message: 'User account verified successfully!',
+        data: { token, user },
+    });
 }));
 exports.changePassword = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
@@ -92,5 +103,5 @@ exports.sendForgotPasswordCode = (0, asyncHandler_1.asyncHandler)((req, res) => 
 }));
 exports.verifyForgotPasswordCode = (0, asyncHandler_1.asyncHandler)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield authService.verifyForgotPasswordCode(req.body);
-    res.status(200).json({ success: true, message: 'User Acccount Password updated successfully!' });
+    res.status(200).json({ success: true, message: 'User account password updated successfully!' });
 }));

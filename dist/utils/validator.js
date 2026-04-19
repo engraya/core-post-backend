@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatePostSchema = exports.createPostSchema = exports.forgotPasswordCodeSchema = exports.forgotPasswordSendSchema = exports.changePasswordSchema = exports.verifyVerificationCodeSchema = exports.userLoginSchema = exports.userRegisterSchema = void 0;
+exports.updatePostSchema = exports.createPostSchema = exports.forgotPasswordCodeSchema = exports.forgotPasswordSendSchema = exports.changePasswordSchema = exports.sendVerificationEmailSchema = exports.verifyVerificationCodeSchema = exports.userLoginSchema = exports.userRegisterSchema = void 0;
 const joi_1 = __importDefault(require("joi"));
 const passwordRules = joi_1.default.string()
     .min(8)
@@ -59,6 +59,18 @@ exports.verifyVerificationCodeSchema = joi_1.default.object({
         'any.required': 'Email is required',
     }),
     code: otpCodeSchema,
+});
+/** Resend verification code (unauthenticated — same shape as forgot-password email step). */
+exports.sendVerificationEmailSchema = joi_1.default.object({
+    email: joi_1.default.string()
+        .email({ tlds: { allow: false } })
+        .required()
+        .messages({
+        'string.base': 'Email must be a string',
+        'string.empty': 'Email cannot be empty',
+        'string.email': 'Email must be a valid email address',
+        'any.required': 'Email is required',
+    }),
 });
 exports.changePasswordSchema = joi_1.default.object({
     oldPassword: passwordRules,

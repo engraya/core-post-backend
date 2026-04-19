@@ -72,6 +72,8 @@ const userSchema = new mongoose_1.Schema({
         select: false,
     },
 }, {
+    /** Avoid `_id` and `id` both in JSON; keep Mongo’s `_id` only (`id` is a Mongoose virtual duplicate). */
+    id: false,
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },

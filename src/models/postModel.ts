@@ -25,6 +25,7 @@ const postSchema: Schema<IPost> = new mongoose.Schema(
     },
   },
   {
+    id: false,
     timestamps: true,
   },
 );
