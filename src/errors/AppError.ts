@@ -1,3 +1,4 @@
+/** Operational error: carries an HTTP status and message for the global error handler. */
 export class AppError extends Error {
   constructor(
     public statusCode: number,

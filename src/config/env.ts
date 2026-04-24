@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+/** Returns an env var or throws if it is missing or empty (fail-fast at process start). */
 function required(name: string): string {
   const v = process.env[name];
   if (v === undefined || v === '') {
@@ -10,6 +11,7 @@ function required(name: string): string {
   return v;
 }
 
+/** Application configuration loaded from the environment. */
 export const config = {
   port: Number(process.env.PORT) || 3000,
   nodeEnv: process.env.NODE_ENV ?? 'development',

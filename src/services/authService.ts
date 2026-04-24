@@ -22,10 +22,14 @@ import {
   getAccountVerifiedEmailSubject,
 } from '../utils/emailTemplates';
 
+/** First Joi error message, or a generic validation fallback. */
 function validationMessage(error: { details: { message: string }[] } | undefined): string {
   return error?.details[0]?.message ?? 'Validation failed';
 }
 
+/**
+ * Generates a 6-digit code, emails it, and persists an HMAC hash plus expiry on the user document.
+ */
 async function sendAndStoreEmailVerificationCode(
   user: IUser,
   templateKind: 'welcome' | 'verification',
@@ -68,20 +72,30 @@ async function sendAccountVerifiedConfirmationEmail(to: string): Promise<void> {
   }
 }
 
-export async function registerUser(body: { email?: string; password?: string }) {
+/** Validates input, creates an unverified user, and triggers the welcome verification email. */
+export async function registerUser(body: {
+  email?: string;
+  password?: string;
+  displayName?: string;
+}) {
   const { error, value } = userRegisterSchema.validate(body);
   if (error) {
     throw new AppError(400, validationMessage(error));
   }
 
-  const { email, password } = value;
+  const { email, password, displayName: displayNameRaw } = value;
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     throw new AppError(409, 'User already exists!');
   }
 
+  const displayName =
+    typeof displayNameRaw === 'string' && displayNameRaw.trim().length > 0
+      ? displayNameRaw.trim()
+      : email.split('@')[0] ?? 'User';
+
   const hashedPassword = await doHash(password, 12);
-  const newUser = new User({ email, password: hashedPassword });
+  const newUser = new User({ email, password: hashedPassword, displayName });
   const result = await newUser.save();
   await sendAndStoreEmailVerificationCode(result, 'welcome');
   const obj = result.toObject();
@@ -89,6 +103,7 @@ export async function registerUser(body: { email?: string; password?: string }) 
   return obj;
 }
 
+/** Verifies email/password, requires verified email, and returns a short-lived JWT. */
 export async function loginUser(body: { email?: string; password?: string }) {
   const { error, value } = userLoginSchema.validate(body);
   if (error) {
@@ -130,6 +145,7 @@ export async function loginUser(body: { email?: string; password?: string }) {
   };
 }
 
+/** Resends a verification OTP to an existing unverified account. */
 export async function sendVerificationCodeForEmail(body: { email?: string }) {
   const { error, value } = sendVerificationEmailSchema.validate(body);
   if (error) {
@@ -148,6 +164,7 @@ export async function sendVerificationCodeForEmail(body: { email?: string }) {
   await sendAndStoreEmailVerificationCode(existingUser, 'verification');
 }
 
+/** Confirms the OTP, flips `verified`, clears code fields, and issues a new JWT. */
 export async function verifyVerificationCode(body: { email?: string; code?: string }) {
   const { error, value } = verifyVerificationCodeSchema.validate(body);
   if (error) {
@@ -208,6 +225,7 @@ export async function verifyVerificationCode(body: { email?: string; code?: stri
   };
 }
 
+/** For a signed-in verified user, checks old password and sets a new bcrypt hash. */
 export async function changePasswordForUser(
   userId: string | undefined,
   verified: boolean | undefined,
@@ -241,6 +259,7 @@ export async function changePasswordForUser(
   await existingUser.save();
 }
 
+/** Stores a hashed password-reset code with a 5-minute window and emails the plain OTP. */
 export async function sendForgotPasswordCode(body: { email?: string }) {
   const { error, value } = forgotPasswordSendSchema.validate(body);
   if (error) {
@@ -273,6 +292,7 @@ export async function sendForgotPasswordCode(body: { email?: string }) {
   await existingUser.save();
 }
 
+/** Validates the reset code window and code, then sets the new password and clears reset state. */
 export async function verifyForgotPasswordCode(body: {
   email?: string;
   code?: string;

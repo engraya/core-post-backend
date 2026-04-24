@@ -8,6 +8,7 @@ import postRouter from './routers/postRouter';
 import userRouter from './routers/userRouter';
 import { errorHandler } from './middlewares/errorHandler';
 
+/** Builds the Express app: global middleware, versioned API mounts, and centralized error handling. */
 export function createApp() {
   const app = express();
 
@@ -18,6 +19,7 @@ export function createApp() {
   app.use(cookieParser());
   app.use(express.urlencoded({ extended: true }));
 
+  /** Root/health check returning a small JSON payload. */
   app.get('/', (_req: Request, res: Response) => {
     res.json({ success: true, message: 'Hello from Express' });
   });

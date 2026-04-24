@@ -62,10 +62,12 @@ const accountVerifiedAccent = {
   gradient: 'linear-gradient(135deg,#14532d 0%,#16a34a 50%,#86efac 100%)',
 };
 
+/** Subject line for the post-verification confirmation email. */
 export function getAccountVerifiedEmailSubject(): string {
   return `You are verified · ${BRAND_NAME}`;
 }
 
+/** Minimal HTML entity escaping for untrusted strings embedded in email HTML. */
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
@@ -81,10 +83,12 @@ function formatCode(code: string): string {
   return `${digits.slice(0, 3)} ${digits.slice(3)}`;
 }
 
+/** Subject for OTP / reset templates keyed by `kind`. */
 export function getOtpEmailSubject(kind: OtpEmailKind): string {
   return KIND_COPY[kind].subject;
 }
 
+/** Renders a branded table layout with the 6-digit code for verification or password reset. */
 export function buildOtpEmail(code: string, kind: OtpEmailKind): { html: string; text: string } {
   const copy = KIND_COPY[kind];
   const displayCode = escapeHtml(formatCode(code));

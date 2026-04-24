@@ -2,12 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config/env';
 
-/** Requires a valid JWT in cookie or `Authorization: Bearer`; sets `req.user` from claims. */
-export const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
+/** Sets `req.user` when a valid JWT is present; otherwise continues without error. */
+export const optionalAuthenticated = (req: Request, _res: Response, next: NextFunction): void => {
   const token = req.cookies.Authorization || req.headers.authorization?.split(' ')[1];
 
   if (!token) {
-    res.status(401).json({ success: false, message: 'UnAuthorized. Please log in to continue.' });
+    next();
     return;
   }
 
@@ -23,9 +23,9 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
       email: decoded.email,
       verified: decoded.verified,
     };
-
-    next();
   } catch {
-    res.status(401).json({ success: false, message: 'Invalid or expired token.' });
+    // Ignore invalid or expired token for optional auth
   }
+
+  next();
 };

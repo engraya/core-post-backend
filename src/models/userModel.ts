@@ -1,9 +1,12 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import type { IPost } from './postModel';
 
+/** Application user: credentials, email verification, optional profile fields, and virtual `posts`. */
 export interface IUser extends Document {
   email: string;
   password: string;
+  displayName: string;
+  avatarUrl?: string;
   verified: boolean;
   verificationCode: string | undefined;
   forgotPasswordCode: string | undefined;
@@ -14,6 +17,7 @@ export interface IUser extends Document {
   posts?: IPost[];
 }
 
+/** Mongoose shape: sensitive fields are `select: false` by default. */
 const userSchema = new Schema<IUser>(
   {
     email: {
@@ -31,6 +35,17 @@ const userSchema = new Schema<IUser>(
       minlength: [8, 'Password must be 8 characters in length'],
       trim: true,
       select: false,
+    },
+    displayName: {
+      type: String,
+      default: '',
+      trim: true,
+      maxlength: [60, 'Display name must not exceed 60 characters'],
+    },
+    avatarUrl: {
+      type: String,
+      trim: true,
+      maxlength: [2048, 'Avatar URL must not exceed 2048 characters'],
     },
     verified: {
       type: Boolean,
@@ -62,12 +77,14 @@ const userSchema = new Schema<IUser>(
   },
 );
 
+/** Reverse populate: user’s blog posts (used when listing users with posts). */
 userSchema.virtual('posts', {
   ref: 'Post',
   localField: '_id',
   foreignField: 'userId',
 });
 
+/** Registered `User` model. */
 const User = mongoose.model<IUser>('User', userSchema);
 
 export default User;

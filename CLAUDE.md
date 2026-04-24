@@ -21,12 +21,19 @@ TypeScript/Express backend for a blogging platform with email-verified JWT authe
 **Request flow:** Router → Controller → Service → Model (MongoDB/Mongoose)
 
 **Routes (all under `/api/v1`):**
-- `/auth` — register, login, logout, email verification, password reset/change
-- `/posts` — CRUD for blog posts (create/update/delete require `isAuthenticated` + `isVerified`)
-- `/users` — list users, get user with their posts
+- `/auth` — register, login, logout, email verification, password reset/change (register accepts optional `displayName`; default is the email local-part)
+- `/posts` — CRUD for blog posts (create/update/delete require `isAuthenticated` + `isVerified`); single-post `GET` uses `optionalAuthenticated` so a valid JWT adds `likedByMe` / `bookmarkedByMe` to the payload
+- `/posts/:postId/comments` — list (public), create / update / delete own comment (`isAuthenticated` + `isVerified` for mutations)
+- `/posts/:postId/like` — POST like, DELETE unlike (`isAuthenticated` + `isVerified`)
+- `/posts/:postId/bookmark` — POST bookmark, DELETE remove bookmark (`isAuthenticated` + `isVerified`)
+- `/posts/:postId/likes/count` — public like count
+- `/users` — list users, get user with their posts (responses include `displayName` and `avatarUrl` when set)
+- `/users/me` — `PATCH` profile (`isAuthenticated`); at least one of `displayName` or `avatarUrl` required in body
+- `/users/me/bookmarks` — paginated bookmark list (`isAuthenticated`)
 
 **Key middleware:**
 - `isAuthenticated` — validates JWT from `Authorization` cookie or `Bearer` header; attaches `req.user`
+- `optionalAuthenticated` — sets `req.user` when a valid JWT is present; does not error if missing or invalid
 - `isVerified` — queries DB to confirm email verification (does not trust JWT payload alone)
 - `asyncHandler` — wraps all controllers to forward promise rejections to the global error handler
 - Rate limiters applied at the router level: `authLoginRegisterLimiter` (50/15min), `passwordFlowLimiter` (10/15min)

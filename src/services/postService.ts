@@ -1,11 +1,15 @@
 import Post from '../models/postModel';
 import { AppError } from '../errors/AppError';
 import { createPostSchema, updatePostSchema } from '../utils/validator';
+import * as engagementService from './engagementService';
+import * as commentService from './commentService';
 
+/** First Joi error message, or a generic validation fallback. */
 function validationMessage(error: { details: { message: string }[] } | undefined): string {
   return error?.details[0]?.message ?? 'Validation failed';
 }
 
+/** Paginated feed of posts, newest first (fixed page size). */
 export async function listPosts(page?: string) {
   const per_page = 10;
   let page_number = 0;
@@ -16,9 +20,10 @@ export async function listPosts(page?: string) {
   return Post.find()
     .sort({ createdAt: -1 })
     .skip(page_number * per_page)
-    .limit(per_page)
+    .limit(per_page);
 }
 
+/** Creates a new post document tied to the given user. */
 export async function createPostForUser(
   userId: string | undefined,
   body: { title?: string; description?: string },
@@ -39,14 +44,17 @@ export async function createPostForUser(
   });
 }
 
-export async function getSinglePost(postId: string) {
-  const post = await Post.findById(postId)
+/** Loads a post and merges public engagement counts and optional per-viewer flags. */
+export async function getSinglePost(postId: string, viewerUserId?: string) {
+  const post = await Post.findById(postId);
   if (!post) {
     throw new AppError(404, 'Post not found');
   }
-  return post;
+  const engagement = await engagementService.getEngagementFlagsForViewer(postId, viewerUserId);
+  return { ...post.toObject(), ...engagement };
 }
 
+/** Updates title/body for a post the user owns. */
 export async function updatePostForOwner(
   userId: string | undefined,
   postId: string,
@@ -74,6 +82,7 @@ export async function updatePostForOwner(
   return updatedPost;
 }
 
+/** Removes the post if owned, then cleans up comments, likes, and bookmarks. */
 export async function deletePostForOwner(userId: string | undefined, postId: string) {
   if (!userId) {
     throw new AppError(401, 'User not authenticated.');
@@ -83,4 +92,11 @@ export async function deletePostForOwner(userId: string | undefined, postId: str
   if (!deletedPost) {
     throw new AppError(404, 'Post not found or you do not have permission to delete it.');
   }
+
+  const id = deletedPost._id as import('mongoose').Types.ObjectId;
+  await Promise.all([
+    commentService.deleteCommentsByPostId(id),
+    engagementService.deleteLikesByPostId(id),
+    engagementService.deleteBookmarksByPostId(id),
+  ]);
 }
