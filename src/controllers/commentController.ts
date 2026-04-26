@@ -1,7 +1,7 @@
 import { asyncHandler } from '../middlewares/asyncHandler';
 import * as commentService from '../services/commentService';
 
-/** Paginated comments for a post, author details populated. */
+/** Paginated comments for a post (`userId` only, no user document). */
 export const listComments = asyncHandler(async (req, res) => {
   const result = await commentService.listCommentsForPost(
     req.params.postId,

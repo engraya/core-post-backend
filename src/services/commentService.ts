@@ -29,7 +29,7 @@ async function assertPostExists(postId: string) {
   }
 }
 
-/** Paginated, newest-first comments for a post with author fields populated. */
+/** Paginated, newest-first comments for a post (`userId` only, not populated). */
 export async function listCommentsForPost(postId: string, page?: string) {
   assertValidObjectId(postId, 'Invalid post id.');
   await assertPostExists(postId);
@@ -43,8 +43,7 @@ export async function listCommentsForPost(postId: string, page?: string) {
   return Comment.find({ postId })
     .sort({ createdAt: -1 })
     .skip(page_number * per_page)
-    .limit(per_page)
-    .populate(authorPopulate);
+    .limit(per_page);
 }
 
 /** Inserts a comment and returns the saved row with author populate. */
