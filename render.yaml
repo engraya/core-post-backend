@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: core-post-backend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: HMACPROCESS_KEY
+        sync: false
+      - key: NODE_VERIFICATIONCODE_SENDING_EMAIL_ADDRESS
+        sync: false
+      - key: NODE_VERIFICATIONCODE_SENDING_EMAIL_PASSWORD
+        sync: false
