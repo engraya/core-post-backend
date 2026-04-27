@@ -4,11 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts",
+    "start": "node api.js && node dist/index.js",
+    "dev": "node api.js && nodemon src/index.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "tsc"
+    "build": "node api.js && tsc"
   },
   "keywords": [],
   "author": "",

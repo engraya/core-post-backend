@@ -1,14 +1,30 @@
-FROM node:alpine3.20
+# ---- Build stage ----
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json .
+COPY package.json package-lock.json tsconfig.json ./
 
-RUN npm install 
+RUN npm ci
 
-COPY ./src .
+COPY src/ ./src/
 
-EXPOSE 4000
+RUN npm run build
 
-CMD [ "node", "index.ts" ]
+# ---- Production stage ----
+FROM node:22-alpine AS production
 
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/dist ./dist
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+EXPOSE 8000
+
+CMD ["node", "dist/index.js"]
